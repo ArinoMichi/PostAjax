@@ -1,0 +1,76 @@
+﻿@model List<string>
+
+<div class="container" >
+    <div class="row justify-content-center">
+        <div class="col-md-12" style="background-color:bisque; padding:30px; border-radius:15px">
+            <h2 class="text-center mb-4" style="color:darkorange">Lista de la compra</h2>
+
+            <form id="formulario-agregar" class="mb-3">
+                <div class="mb-3">
+                    <div class="row">
+                        <input type="text" id="producto" name="nombre" class="form-control" placeholder="Nombre del producto" />
+                    </div>
+
+                    <div class="row" style="margin-top:10px">
+                        <button type="submit" class="btn" style="background-color:sandybrown">Agregar Producto</button>
+                    </div>
+                </div>
+            </form>
+
+            <ul id="lista-productos" class="list-group">
+                @foreach (var producto in Model)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        @producto
+                            <i class="fas fa-times eliminar-producto" data-nombre="@producto"></i>
+
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#formulario-agregar').submit(function (e) {
+                e.preventDefault();
+                var nombre = $('#producto').val().trim();
+                if (nombre !== '') {
+                    $.ajax({
+                        url: '@Url.Action("Agregar", "Producto")',
+                        type: 'POST',
+                        data: { nombre: nombre },
+                        success: function (response) {
+                            if (response.success) {
+                                $('#lista-productos').append('<li class="list-group-item d-flex justify-content-between align-items-center">' + nombre + '<button class="btn btn-danger btn-sm eliminar-producto" data-nombre="' + nombre + '">Eliminar</button></li>');
+                                $('#producto').val('');
+                            }
+                        }
+                    });
+                } else {
+                    alert('Por favor ingrese un nombre de producto válido.');
+                }
+            });
+
+            $(document).on('click', '.eliminar-producto', function () {
+                var nombre = $(this).data('nombre');
+                
+                    var listItem = $(this).closest('li');
+                    $.ajax({
+                        url: '@Url.Action("Eliminar", "Producto")',
+                        type: 'POST',
+                        data: { nombre: nombre },
+                        success: function (response) {
+                            if (response.success) {
+                                listItem.remove();
+                            }
+                        }
+                    });
+                
+            });
+        });
+    </script>
+}
